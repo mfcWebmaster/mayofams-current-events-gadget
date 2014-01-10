@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Module>
+	<ModulePrefs title="hello world example" />
+	<Content type="html">
+	<![CDATA[ 
+		<style>
+			body { background-color: inherit; }
+			ul { padding-left: 0px; }
+			ul li { list-style-type: none; text-align: center; }
+		</style>
+		<div ng-app="app">
+		<ul ng-controller="ctrl">
+			<li ng-repeat="event in events.items" style="">
+				({{event.start.dateTime | date:'MMM d - hh:mm a'}})
+				<a ng-href="{{event.htmlLink}}" target="_blank"> {{event.summary}}</a></li>
+		</ul>
+		</div>
+	
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.5/angular.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.5/angular-resource.min.js"></script>
+		<script src="https://datejs.googlecode.com/files/date.js"></script>
+		<script type="text/javascript">
+			var app = angular.module('app', ['ngResource']);
+			app.factory('calendar', ['$resource', function($resource) {
+			  var key = 'AIzaSyCqO5V4-n-XNx2dngv_IBzynDNbYReFRP4' // mfc key
+			  //var key = 'AIzaSyDpz-cdaL1hIZvgGeTA4oKYlqxaFXcX80Y';
+			  return $resource('https://www.googleapis.com/calendar/v3/calendars/webmaster%40mayofams.org/events?timeMax=:to&timeMin=:from&key=' + key + '&singleEvents=true&orderBy=startTime', 
+			    {}, 
+			    {
+			      query: {
+			        method: 'GET', 
+			        params: {
+			          to: function() {
+			            var today = Date.today();
+			            var sunday;
+			            if (today.is().sunday()) sunday = today;
+			            else sunday = today.sunday();
+			            return sunday.toString('yyyy-MM-ddThh:mm:ssZ');
+			          }, 
+			          from: function() {
+			            var today = Date.today();
+			            var monday;
+			            if (today.is().monday()) monday = today;
+			            else monday = today.previous().monday();
+			            return monday.toString('yyyy-MM-ddThh:mm:ssZ')
+			          }
+			        }, 
+			        isArray:false
+			      }
+			    });
+			}]);
+			
+			app.controller('ctrl', function($scope, calendar) {
+			   $scope.events = calendar.query();
+			});
+		</script>
+	]]>
+	</Content>
+</Module>
